@@ -175,7 +175,7 @@ const Prediction = () => {
     <div className="space-y-8">
       {/* Header */}
       <div className="text-center">
-        <h2 className="text-4xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent mb-2">
+        <h2 className="text-4xl font-bold text-white mb-2 tracking-tight">
           Network Traffic Prediction
         </h2>
         <p className="text-gray-400">Analyze network traffic patterns using AI-powered detection</p>
@@ -183,13 +183,13 @@ const Prediction = () => {
 
       {/* Input Mode Toggle */}
       <div className="flex justify-center">
-        <div className="bg-black/40 backdrop-blur-lg rounded-xl p-1 border border-purple-500/20">
+        <div className="bg-white/5 backdrop-blur-sm rounded-xl p-1 border border-white/10">
           <div className="flex space-x-1">
             <button
               onClick={() => setInputMode('manual')}
               className={`px-6 py-3 rounded-lg font-medium transition-all duration-300 flex items-center space-x-2 ${
                 inputMode === 'manual'
-                  ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-lg'
+                  ? 'bg-white text-black shadow-lg'
                   : 'text-gray-400 hover:text-white hover:bg-white/5'
               }`}
             >
@@ -200,7 +200,7 @@ const Prediction = () => {
               onClick={() => setInputMode('csv')}
               className={`px-6 py-3 rounded-lg font-medium transition-all duration-300 flex items-center space-x-2 ${
                 inputMode === 'csv'
-                  ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-lg'
+                  ? 'bg-white text-black shadow-lg'
                   : 'text-gray-400 hover:text-white hover:bg-white/5'
               }`}
             >
@@ -213,16 +213,16 @@ const Prediction = () => {
 
       {/* Input Section */}
       {inputMode === 'manual' ? (
-        <div className="bg-black/40 backdrop-blur-lg rounded-xl p-8 border border-purple-500/20">
+        <div className="bg-white/5 backdrop-blur-sm rounded-xl p-8 border border-white/10">
           <h3 className="text-xl font-semibold text-white mb-6 flex items-center">
-            <Database className="w-5 h-5 mr-2 text-purple-400" />
+            <Database className="w-5 h-5 mr-2 text-white" />
             Enter Network Features
           </h3>
           
           <div className="space-y-6">
             {Object.entries(featureGroups).map(([groupName, features]) => (
               <div key={groupName}>
-                <h4 className="text-sm font-medium text-purple-400 mb-3">{groupName}</h4>
+                <h4 className="text-sm font-medium text-gray-300 mb-3">{groupName}</h4>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   {features.map((feature) => (
                     <div key={feature.name}>
@@ -234,7 +234,7 @@ const Prediction = () => {
                         step="any"
                         placeholder={feature.placeholder}
                         onChange={(e) => handleInputChange(feature.name, e.target.value)}
-                        className="w-full px-4 py-3 bg-black/30 border border-purple-500/30 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-purple-400 focus:ring-2 focus:ring-purple-400/20 transition-all duration-300"
+                        className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-white/40 focus:ring-2 focus:ring-white/20 transition-all duration-300"
                       />
                     </div>
                   ))}
@@ -262,13 +262,13 @@ const Prediction = () => {
           </button>
         </div>
       ) : (
-        <div className="bg-black/40 backdrop-blur-lg rounded-xl p-8 border border-purple-500/20">
+        <div className="bg-white/5 backdrop-blur-sm rounded-xl p-8 border border-white/10">
           <h3 className="text-xl font-semibold text-white mb-6 flex items-center">
-            <Upload className="w-5 h-5 mr-2 text-purple-400" />
+            <Upload className="w-5 h-5 mr-2 text-white" />
             Upload CSV File
           </h3>
 
-          <div className="border-2 border-dashed border-purple-500/30 rounded-xl p-12 text-center hover:border-purple-400/50 transition-all duration-300">
+          <div className="border-2 border-dashed border-white/20 rounded-xl p-12 text-center hover:border-white/40 transition-all duration-300">
             <input
               type="file"
               accept=".csv"
@@ -277,7 +277,7 @@ const Prediction = () => {
               id="csv-upload"
             />
             <label htmlFor="csv-upload" className="cursor-pointer">
-              <Upload className="w-16 h-16 mx-auto text-purple-400 mb-4" />
+              <Upload className="w-16 h-16 mx-auto text-white mb-4" />
               <p className="text-white font-medium mb-2">
                 {csvFile ? csvFile.name : 'Click to upload or drag and drop'}
               </p>
@@ -286,10 +286,10 @@ const Prediction = () => {
           </div>
 
           {csvFile && (
-            <div className="mt-6 p-4 bg-purple-500/10 rounded-lg border border-purple-500/30">
+            <div className="mt-6 p-4 bg-white/5 rounded-lg border border-white/20">
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-3">
-                  <FileText className="w-5 h-5 text-purple-400" />
+                  <FileText className="w-5 h-5 text-white" />
                   <div>
                     <p className="text-white font-medium">{csvFile.name}</p>
                     <p className="text-gray-400 text-sm">
@@ -329,13 +329,13 @@ const Prediction = () => {
 
       {/* Results Section */}
       {predictions.length > 0 && (
-        <div className="bg-black/40 backdrop-blur-lg rounded-xl p-8 border border-purple-500/20">
+        <div className="bg-white/5 backdrop-blur-sm rounded-xl p-8 border border-white/10">
           <div className="flex items-center justify-between mb-6">
             <h3 className="text-xl font-semibold text-white flex items-center">
-              <AlertCircle className="w-5 h-5 mr-2 text-purple-400" />
+              <AlertCircle className="w-5 h-5 mr-2 text-white" />
               Prediction Results
             </h3>
-            <button className="text-purple-400 hover:text-purple-300 transition-colors flex items-center space-x-2">
+            <button className="text-gray-400 hover:text-white transition-colors flex items-center space-x-2">
               <Download className="w-4 h-4" />
               <span className="text-sm">Export</span>
             </button>
@@ -369,7 +369,7 @@ const Prediction = () => {
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
-                  <tr className="border-b border-purple-500/20">
+                  <tr className="border-b border-white/20">
                     <th className="text-left py-3 px-4 text-gray-300 font-medium">Row</th>
                     <th className="text-left py-3 px-4 text-gray-300 font-medium">Classification</th>
                     <th className="text-left py-3 px-4 text-gray-300 font-medium">Confidence</th>
@@ -378,7 +378,7 @@ const Prediction = () => {
                 </thead>
                 <tbody>
                   {predictions.map((pred) => (
-                    <tr key={pred.id} className="border-b border-purple-500/10 hover:bg-white/5 transition-colors">
+                    <tr key={pred.id} className="border-b border-white/10 hover:bg-white/5 transition-colors">
                       <td className="py-4 px-4 text-white">{pred.row}</td>
                       <td className="py-4 px-4">
                         <span className={`px-2 py-1 rounded-md text-xs font-medium border ${getAttackColor(pred.label)}`}>

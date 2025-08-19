@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { Send, MessageCircle, Bot, User, HelpCircle, Shield, Database, BarChart3 } from 'lucide-react'
+import { callGeminiAPI } from '../config/gemini'
 
 const Helper = () => {
   const [isVisible, setIsVisible] = useState(false)
@@ -7,12 +8,13 @@ const Helper = () => {
     {
       id: 1,
       type: 'bot',
-      content: 'Hello! I\'m your Network Security Assistant. I can help you with questions about network intrusion detection, using the prediction system, understanding attack types, and interpreting results. How can I assist you today?',
+      content: 'Hello! I\'m your AI-powered Network Security Assistant with comprehensive knowledge of the CICIDS2017 dataset. I can help you understand network intrusion detection, attack types, feature analysis, and system usage. How can I assist you today?',
       timestamp: new Date().toLocaleTimeString()
     }
   ])
   const [inputMessage, setInputMessage] = useState('')
   const [isTyping, setIsTyping] = useState(false)
+  const [conversationHistory, setConversationHistory] = useState([])
   const messagesEndRef = useRef(null)
 
   useEffect(() => {
@@ -60,46 +62,59 @@ const Helper = () => {
     'how accurate is the ml model?': 'The XGBoost model used in this system:\n\n• Is trained on comprehensive network traffic data\n• Uses 78+ features for classification\n• Employs gradient boosting for high accuracy\n• Can handle various network protocols and patterns\n\nModel performance depends on:\n- Quality of training data\n- Feature engineering\n- Regular updates with new attack patterns\n\nFor best results, ensure your input data matches the training format.'
   }
 
-  const generateBotResponse = (userMessage) => {
-    const lowerMessage = userMessage.toLowerCase()
-    
-    // Check for exact matches first
-    for (const [key, answer] of Object.entries(predefinedAnswers)) {
-      if (lowerMessage.includes(key.toLowerCase()) || lowerMessage === key.toLowerCase()) {
-        return answer
+  const generateBotResponse = async (userMessage) => {
+    try {
+      // Try Gemini API first
+      const response = await callGeminiAPI(userMessage, conversationHistory)
+      return response
+    } catch (error) {
+      console.error('Gemini API failed, falling back to predefined answers:', error)
+      
+      // Fallback to predefined answers
+      const lowerMessage = userMessage.toLowerCase()
+      
+      // Check for exact matches first
+      for (const [key, answer] of Object.entries(predefinedAnswers)) {
+        if (lowerMessage.includes(key.toLowerCase()) || lowerMessage === key.toLowerCase()) {
+          return answer
+        }
       }
+      
+      // Check for keywords and provide relevant responses
+      if (lowerMessage.includes('attack') || lowerMessage.includes('threat')) {
+        return predefinedAnswers['what attack types can this system detect?']
+      }
+      
+      if (lowerMessage.includes('csv') || lowerMessage.includes('upload') || lowerMessage.includes('file')) {
+        return predefinedAnswers['how do i use the csv upload feature?']
+      }
+      
+      if (lowerMessage.includes('confidence') || lowerMessage.includes('score') || lowerMessage.includes('percentage')) {
+        return predefinedAnswers['what do the confidence scores mean?']
+      }
+      
+      if (lowerMessage.includes('accuracy') || lowerMessage.includes('reliable') || lowerMessage.includes('model')) {
+        return predefinedAnswers['how accurate is the ml model?']
+      }
+      
+      if (lowerMessage.includes('hello') || lowerMessage.includes('hi') || lowerMessage.includes('hey')) {
+        return 'Hello! I\'m here to help you with the Network Intrusion Detection System. You can ask me about attack types, how to use features, or understanding the results. What would you like to know?'
+      }
+      
+      if (lowerMessage.includes('help') || lowerMessage.includes('how')) {
+        return 'I can help you with:\n\n• Understanding different attack types\n• Using the prediction features\n• Interpreting confidence scores\n• CSV upload process\n• Model accuracy and reliability\n\nWhat specific topic would you like to know more about?'
+      }
+      
+      // Default response when API is unavailable
+      if (error.message.includes('API key not configured')) {
+        return 'I\'m currently running in offline mode. I can help with basic questions about the system, but for comprehensive CICIDS2017 dataset knowledge, please configure the Gemini API key. You can ask me about:\n\n• Attack types and classifications\n• How to use the prediction features\n• Understanding confidence scores\n• CSV upload process\n\nTry asking one of the quick questions below!'
+      }
+      
+      return 'I\'m here to help with questions about network security and this detection system. You can ask me about:\n\n• Attack types and classifications\n• How to use the prediction features\n• Understanding confidence scores\n• CSV upload process\n• Model performance\n\nTry asking one of the quick questions below or type your own question!'
     }
-    
-    // Check for keywords and provide relevant responses
-    if (lowerMessage.includes('attack') || lowerMessage.includes('threat')) {
-      return predefinedAnswers['what attack types can this system detect?']
-    }
-    
-    if (lowerMessage.includes('csv') || lowerMessage.includes('upload') || lowerMessage.includes('file')) {
-      return predefinedAnswers['how do i use the csv upload feature?']
-    }
-    
-    if (lowerMessage.includes('confidence') || lowerMessage.includes('score') || lowerMessage.includes('percentage')) {
-      return predefinedAnswers['what do the confidence scores mean?']
-    }
-    
-    if (lowerMessage.includes('accuracy') || lowerMessage.includes('reliable') || lowerMessage.includes('model')) {
-      return predefinedAnswers['how accurate is the ml model?']
-    }
-    
-    if (lowerMessage.includes('hello') || lowerMessage.includes('hi') || lowerMessage.includes('hey')) {
-      return 'Hello! I\'m here to help you with the Network Intrusion Detection System. You can ask me about attack types, how to use features, or understanding the results. What would you like to know?'
-    }
-    
-    if (lowerMessage.includes('help') || lowerMessage.includes('how')) {
-      return 'I can help you with:\n\n• Understanding different attack types\n• Using the prediction features\n• Interpreting confidence scores\n• CSV upload process\n• Model accuracy and reliability\n\nWhat specific topic would you like to know more about?'
-    }
-    
-    // Default response
-    return 'I\'m here to help with questions about network security and this detection system. You can ask me about:\n\n• Attack types and classifications\n• How to use the prediction features\n• Understanding confidence scores\n• CSV upload process\n• Model performance\n\nTry asking one of the quick questions below or type your own question!'
   }
 
-  const handleSendMessage = () => {
+  const handleSendMessage = async () => {
     if (!inputMessage.trim()) return
 
     const userMessage = {
@@ -110,20 +125,47 @@ const Helper = () => {
     }
 
     setMessages(prev => [...prev, userMessage])
+    
+    // Update conversation history for Gemini context
+    setConversationHistory(prev => [
+      ...prev,
+      { role: 'user', parts: [{ text: inputMessage }] }
+    ])
+    
+    const currentInput = inputMessage
     setInputMessage('')
     setIsTyping(true)
 
-    // Simulate bot typing delay
-    setTimeout(() => {
+    try {
+      const botResponseContent = await generateBotResponse(currentInput)
+      
       const botResponse = {
         id: Date.now() + 1,
         type: 'bot',
-        content: generateBotResponse(inputMessage),
+        content: botResponseContent,
         timestamp: new Date().toLocaleTimeString()
       }
+      
       setMessages(prev => [...prev, botResponse])
+      
+      // Update conversation history with bot response
+      setConversationHistory(prev => [
+        ...prev,
+        { role: 'model', parts: [{ text: botResponseContent }] }
+      ])
+      
+    } catch (error) {
+      console.error('Error generating response:', error)
+      const errorResponse = {
+        id: Date.now() + 1,
+        type: 'bot',
+        content: 'I apologize, but I\'m having trouble processing your request right now. Please try again or ask one of the quick questions below.',
+        timestamp: new Date().toLocaleTimeString()
+      }
+      setMessages(prev => [...prev, errorResponse])
+    } finally {
       setIsTyping(false)
-    }, 1500)
+    }
   }
 
   const handleQuickQuestion = (question) => {
